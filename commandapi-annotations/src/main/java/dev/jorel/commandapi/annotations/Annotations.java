@@ -179,7 +179,8 @@ public class Annotations extends AbstractProcessor {
 				imports.add(CommandPermission.class.getCanonicalName());
 			}
 			
-			if(methodElement instanceof ExecutableElement method) {
+			if(methodElement instanceof ExecutableElement) {
+				ExecutableElement method = (ExecutableElement) methodElement;
 				for(VariableElement parameter : method.getParameters()) {
 					Annotation argument = getArgument(parameter);
 					if(argument != null) {
@@ -311,14 +312,30 @@ public class Annotations extends AbstractProcessor {
 		String[] firstParam = methodType.getParameterTypes().get(0).toString().split("\\.");
 		out.print(indent(indent));
 		switch (firstParam[firstParam.length - 1]) {
-		case "Player" -> out.print(".executesPlayer");
-		case "ConsoleCommandSender" -> out.print(".executesConsole");
-		case "BlockCommandSender" -> out.print(".executesCommandBlock");
-		case "ProxiedCommandSender" -> out.print(".executesProxy");
-		case "NativeProxyCommandSender" -> out.print(".executesNative");
-		case "Entity" -> out.print(".executesEntity");
-		case "CommandSender" -> out.print(".executes");
-		default -> out.print(".executes");
+			case "Player":
+				out.print(".executesPlayer");
+				break;
+			case "ConsoleCommandSender":
+				out.print(".executesConsole");
+				break;
+			case "BlockCommandSender":
+				out.print(".executesCommandBlock");
+				break;
+			case "ProxiedCommandSender":
+				out.print(".executesProxy");
+				break;
+			case "NativeProxyCommandSender":
+				out.print(".executesNative");
+				break;
+			case "Entity":
+				out.print(".executesEntity");
+				break;
+			case "CommandSender":
+				out.print(".executes");
+				break;
+			default:
+				out.print(".executes");
+				break;
 		}
 
 		out.println("((sender, args) -> {");
@@ -491,24 +508,32 @@ public class Annotations extends AbstractProcessor {
 		
 		// Handle parameters
 		// Number arguments
-		if(argumentAnnotation instanceof AIntegerArgument argument) {
+		if(argumentAnnotation instanceof AIntegerArgument) {
+			final AIntegerArgument argument = (AIntegerArgument) argumentAnnotation;
 			out.print(", " + argument.min() + ", " + argument.max());
-		} else if(argumentAnnotation instanceof ALongArgument argument) {
+		} else if(argumentAnnotation instanceof ALongArgument) {
+			final ALongArgument argument = (ALongArgument) argumentAnnotation;
 			out.print(", " + argument.min() + "L, " + argument.max() + "L");
-		} else if(argumentAnnotation instanceof AFloatArgument argument) {
+		} else if(argumentAnnotation instanceof AFloatArgument) {
+			final AFloatArgument argument = (AFloatArgument) argumentAnnotation;
 			out.print(", " + argument.min() + "F, " + argument.max() + "F");
-		} else if(argumentAnnotation instanceof ADoubleArgument argument) {
+		} else if(argumentAnnotation instanceof ADoubleArgument) {
+			final ADoubleArgument argument = (ADoubleArgument) argumentAnnotation;
 			out.print(", " + argument.min() + "D, " + argument.max() + "D");
 		}
 		
 		// Non-number arguments
-		else if(argumentAnnotation instanceof ALocation2DArgument argument) {
+		else if(argumentAnnotation instanceof ALocation2DArgument) {
+			final ALocation2DArgument argument = (ALocation2DArgument) argumentAnnotation;
 			out.print(", " + LocationType.class.getSimpleName() + "." + argument.value().toString());
-		} else if(argumentAnnotation instanceof ALocationArgument argument) {
+		} else if(argumentAnnotation instanceof ALocationArgument) {
+			final ALocationArgument argument = (ALocationArgument) argumentAnnotation;
 			out.print(", " + LocationType.class.getSimpleName() + "." + argument.value().toString());
-		} else if(argumentAnnotation instanceof AMultiLiteralArgument argument) {
+		} else if(argumentAnnotation instanceof AMultiLiteralArgument) {
+			final AMultiLiteralArgument argument = (AMultiLiteralArgument) argumentAnnotation;
 			out.print(", " + Arrays.stream(argument.value()).map(s -> "\"" + s + "\"").collect(Collectors.joining(", ")));
-		} else if(argumentAnnotation instanceof ALiteralArgument argument) {
+		} else if(argumentAnnotation instanceof ALiteralArgument) {
+			final ALiteralArgument argument = (ALiteralArgument) argumentAnnotation;
 			out.print(", \"");
 			out.print(argument.value());
 			out.print("\"");

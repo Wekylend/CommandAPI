@@ -102,9 +102,10 @@ public class Rotation {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof Rotation other)) {
+		if (!(obj instanceof Rotation)) {
 			return false;
 		}
+		final Rotation other = (Rotation) obj;
 		return Float.floatToIntBits(pitch) == Float.floatToIntBits(other.pitch) &&
 			Float.floatToIntBits(yaw) == Float.floatToIntBits(other.yaw);
 	}

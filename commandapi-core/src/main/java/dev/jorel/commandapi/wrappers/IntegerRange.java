@@ -108,9 +108,10 @@ public class IntegerRange {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof IntegerRange other)) {
+		if (!(obj instanceof IntegerRange)) {
 			return false;
 		}
+		final IntegerRange other = (IntegerRange) obj;
 		return high == other.high && low == other.low;
 	}
 	

@@ -30,11 +30,13 @@ extends AbstractArgument<?, ?, Argument, CommandSender>
 	 */
 	@SuppressWarnings("unchecked")
 	protected AbstractArgumentTree() {
-		if (this instanceof AbstractArgument<?, ?, Argument, CommandSender>) {
+		this.argument = (Argument) this;
+
+		/*if (this instanceof AbstractArgument<?, ?, Argument, CommandSender>) {
 			this.argument = (Argument) this;
 		} else {
 			throw new IllegalArgumentException("Implicit inherited constructor must be from Argument");
-		}
+		}*/
 	}
 
 	/**

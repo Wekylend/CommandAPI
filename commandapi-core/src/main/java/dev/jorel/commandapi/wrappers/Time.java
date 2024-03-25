@@ -82,9 +82,10 @@ public class Time {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof Time other)) {
+		if (!(obj instanceof Time)) {
 			return false;
 		}
+		final Time other = (Time) obj;
 		return Objects.equals(timeString, other.timeString);
 	}
 	

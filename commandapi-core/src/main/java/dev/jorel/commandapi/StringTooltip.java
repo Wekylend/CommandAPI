@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.mojang.brigadier.Message;
@@ -188,7 +189,7 @@ public class StringTooltip implements IStringTooltip {
 	 */
 	protected static <T> Collection<StringTooltip> generate(Function<String, T> tooltipGenerator, BiFunction<String, T, StringTooltip> tooltipWrapper, Stream<String> suggestions) {
 		Function<String, StringTooltip> builder = suggestion -> tooltipWrapper.apply(suggestion, tooltipGenerator.apply(suggestion));
-		return suggestions.map(builder).toList();
+		return suggestions.map(builder).collect(Collectors.toList());
 	}
 
 	protected StringTooltip(String suggestion, Message tooltip) {

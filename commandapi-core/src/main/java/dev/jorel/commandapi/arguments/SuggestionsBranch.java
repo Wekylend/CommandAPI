@@ -10,6 +10,7 @@ import dev.jorel.commandapi.SuggestionInfo;
 import dev.jorel.commandapi.executors.CommandArguments;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a branch in the suggestions of an argument. Use {@link SuggestionsBranch#suggest(ArgumentSuggestions...)}
@@ -143,22 +144,74 @@ public class SuggestionsBranch<CommandSender> {
 		}
 	}
 
-	private record EnforceReplacementsResult(ExceptionType type, CommandSyntaxException exception) {
-		public static EnforceReplacementsResult withContext(ExceptionType type, StringReader errorContext) {
-			return new EnforceReplacementsResult(type, switch (type) {
-				case NO_ERROR -> null;
-				case NOT_ENOUGH_ARGUMENTS -> new SimpleCommandExceptionType(new LiteralMessage("Expected more arguments")).createWithContext(errorContext);
-				case UNKNOWN_ARGUMENT -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(errorContext);
-				case UNKNOWN_COMMAND -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(errorContext);
-				case UNKNOWN -> new SimpleCommandExceptionType(new LiteralMessage("Unknown syntax exception while parsing argument")).createWithContext(errorContext);
-			});
-		}
+    static final class EnforceReplacementsResult {
+        private final ExceptionType type;
+        private final CommandSyntaxException exception;
 
-		public boolean isHigherPriority(EnforceReplacementsResult other) {
-			// Priority is determined by the order of the elements in the enum
-			return this.type.ordinal() < other.type.ordinal();
-		}
-	}
+        private EnforceReplacementsResult(ExceptionType type, CommandSyntaxException exception) {
+            this.type = type;
+            this.exception = exception;
+        }
+
+        public static EnforceReplacementsResult withContext(ExceptionType type, StringReader errorContext) {
+			CommandSyntaxException commandSyntaxException = null;
+
+			switch (type) {
+				case NO_ERROR:
+					commandSyntaxException = null;
+					break;
+				case NOT_ENOUGH_ARGUMENTS:
+					commandSyntaxException = new SimpleCommandExceptionType(new LiteralMessage("Expected more arguments")).createWithContext(errorContext);
+					break;
+				case UNKNOWN_ARGUMENT:
+					commandSyntaxException = CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(errorContext);
+					break;
+				case UNKNOWN_COMMAND:
+					commandSyntaxException = CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(errorContext);
+					break;
+				case UNKNOWN:
+					commandSyntaxException = new SimpleCommandExceptionType(new LiteralMessage("Unknown syntax exception while parsing argument")).createWithContext(errorContext);
+					break;
+			}
+
+            return new EnforceReplacementsResult(type, commandSyntaxException);
+        }
+
+        public boolean isHigherPriority(EnforceReplacementsResult other) {
+            // Priority is determined by the order of the elements in the enum
+            return this.type.ordinal() < other.type.ordinal();
+        }
+
+        public ExceptionType type() {
+            return type;
+        }
+
+        public CommandSyntaxException exception() {
+            return exception;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (EnforceReplacementsResult) obj;
+            return Objects.equals(this.type, that.type) &&
+                   Objects.equals(this.exception, that.exception);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(type, exception);
+        }
+
+        @Override
+        public String toString() {
+            return "EnforceReplacementsResult[" +
+                   "type=" + type + ", " +
+                   "exception=" + exception + ']';
+        }
+
+    }
 
 	private enum ExceptionType {
 		NO_ERROR,
@@ -191,7 +244,7 @@ public class SuggestionsBranch<CommandSender> {
 				} catch (CommandSyntaxException exception) {
 					return new EnforceReplacementsResult(ExceptionType.UNKNOWN, exception);
 				}
-				List<String> results = builder.build().getList().stream().map(Suggestion::getText).toList();
+				List<String> results = builder.build().getList().stream().map(Suggestion::getText).collect(Collectors.toList());
 				if (currentArgument.isEmpty()) {
 					if (results.isEmpty()) {
 						// Arguments ended at same time as suggestions

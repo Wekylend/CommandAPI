@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -472,15 +473,13 @@ extends AbstractArgument<?, ?, Argument, CommandSender>
 					builder2.append(arg[0]).append("<").append(arg[1]).append("> ");
 				}
 
-				CommandAPI.logError("""
-					Failed to register command:
-
-					  %s %s
-
-					Because it conflicts with this previously registered command:
-
-					  %s %s
-					""".formatted(commandName, argumentsAsString, commandName, builder2.toString()));
+				CommandAPI.logError("Failed to register command:\n" +
+                                     "\n" +
+                                     "  " + commandName + " " + argumentsAsString + "\n" +
+                                     "\n" +
+                                     "Because it conflicts with this previously registered command:\n" +
+                                     "\n" +
+                                     "  " + commandName + " " + builder2 + "\n");
 				return true;
 			}
 		}
@@ -500,7 +499,8 @@ extends AbstractArgument<?, ?, Argument, CommandSender>
 		}
 
 		// Handle arguments with built-in suggestion providers
-		else if (innerArg instanceof CustomProvidedArgument customProvidedArg && innerArg.getOverriddenSuggestions().isEmpty()) {
+		else if (innerArg instanceof CustomProvidedArgument && innerArg.getOverriddenSuggestions().isEmpty()) {
+			final CustomProvidedArgument customProvidedArg = (CustomProvidedArgument) innerArg;
 			return getRequiredArgumentBuilderWithProvider(innerArg, args,
 					platform.getSuggestionProvider(customProvidedArg.getSuggestionProvider())).executes(command);
 		}
@@ -526,8 +526,8 @@ extends AbstractArgument<?, ?, Argument, CommandSender>
 			}
 
 			// Handle arguments with built-in suggestion providers
-			else if (outerArg instanceof CustomProvidedArgument customProvidedArg
-					&& outerArg.getOverriddenSuggestions().isEmpty()) {
+			else if (outerArg instanceof CustomProvidedArgument && outerArg.getOverriddenSuggestions().isEmpty()) {
+				final CustomProvidedArgument customProvidedArg = (CustomProvidedArgument) outerArg;
 				outer = getRequiredArgumentBuilderWithProvider(outerArg, args,
 						platform.getSuggestionProvider(customProvidedArg.getSuggestionProvider())).then(outer);
 			}
@@ -549,7 +549,8 @@ extends AbstractArgument<?, ?, Argument, CommandSender>
 	 * @param aliases     the command's aliases
 	 */
 	private void handlePreviewableArguments(String commandName, Argument[] args, String[] aliases) {
-		if (args.length > 0 && args[args.length - 1] instanceof Previewable<?, ?> previewable) {
+		if (args.length > 0 && args[args.length - 1] instanceof Previewable<?, ?>) {
+			final Previewable<?, ?> previewable = (Previewable<?, ?>) args[args.length - 1];
 			List<String> path = new ArrayList<>();
 
 			path.add(commandName);
@@ -702,15 +703,13 @@ extends AbstractArgument<?, ?, Argument, CommandSender>
 			// We shouldn't find MultiLiteralArguments at this point, only LiteralArguments
 			if (!(arg instanceof Literal)) {
 				if (argumentNames.contains(arg.getNodeName())) {
-					CommandAPI.logError("""
-						Failed to register command:
-
-						  %s %s
-
-						Because the following argument shares the same node name as another argument:
-
-						  %s
-						""".formatted(commandName, humanReadableCommandArgSyntax, arg.toString()));
+					CommandAPI.logError("Failed to register command:\n" +
+                                         "\n" +
+                                         "  " + commandName + " " + humanReadableCommandArgSyntax + "\n" +
+                                         "\n" +
+                                         "Because the following argument shares the same node name as another argument:\n" +
+                                         "\n" +
+                                         "  " + arg + "\n");
 					return false;
 				} else {
 					argumentNames.add(arg.getNodeName());
@@ -966,14 +965,62 @@ extends AbstractArgument<?, ?, Argument, CommandSender>
 	// SECTION: Private classes //
 	//////////////////////////////
 
-	/**
-	 * Class to store cached methods and fields
-	 * <p>
-	 * This is required because each key is made up of a class and a field or method
-	 * name
-	 */
-	private record ClassCache(Class<?> clazz, String name, String mojangMappedName) {
-	}
+    /**
+     * Class to store cached methods and fields
+     * <p>
+     * This is required because each key is made up of a class and a field or method
+     * name
+     */
+    static final class ClassCache {
+        private final Class<?> clazz;
+        private final String name;
+        private final String mojangMappedName;
+
+        /**
+         *
+         */
+        private ClassCache(Class<?> clazz, String name, String mojangMappedName) {
+            this.clazz = clazz;
+            this.name = name;
+            this.mojangMappedName = mojangMappedName;
+        }
+
+        public Class<?> clazz() {
+            return clazz;
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public String mojangMappedName() {
+            return mojangMappedName;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (ClassCache) obj;
+            return Objects.equals(this.clazz, that.clazz) &&
+                   Objects.equals(this.name, that.name) &&
+                   Objects.equals(this.mojangMappedName, that.mojangMappedName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(clazz, name, mojangMappedName);
+        }
+
+        @Override
+        public String toString() {
+            return "ClassCache[" +
+                   "clazz=" + clazz + ", " +
+                   "name=" + name + ", " +
+                   "mojangMappedName=" + mojangMappedName + ']';
+        }
+
+    }
 
 	/**
 	 * A class to compute the Cartesian product of a number of lists. Source:

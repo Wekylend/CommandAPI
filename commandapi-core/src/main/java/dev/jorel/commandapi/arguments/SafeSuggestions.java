@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -209,7 +210,7 @@ public interface SafeSuggestions<S, CommandSender> {
 	 */
 	@SafeVarargs
 	private static <T> Collection<String> toStrings(Function<T, String> mapper, T... suggestions) {
-		return Arrays.stream(suggestions).map(mapper).toList();
+		return Arrays.stream(suggestions).map(mapper).collect(Collectors.toList());
 	}
 
 	/**
@@ -222,7 +223,7 @@ public interface SafeSuggestions<S, CommandSender> {
 	 * @return collection of strings representing the collection of values under the mapping function
 	 */
 	private static <T> Collection<String> toStrings(Function<T, String> mapper, Collection<T> suggestions) {
-		return suggestions.stream().map(mapper).toList();
+		return suggestions.stream().map(mapper).collect(Collectors.toList());
 	}
 
 
@@ -267,7 +268,7 @@ public interface SafeSuggestions<S, CommandSender> {
 	private static <T> Collection<IStringTooltip> toStringsWithTooltips(Function<T, String> mapper, Stream<Tooltip<T>> suggestions) {
 		//Note the ::apply is required to allow the return type to be IStringTooltip instead of StringTooltip
 		Function<Tooltip<T>, IStringTooltip> builder = Tooltip.build(mapper)::apply;
-		return suggestions.map(builder).toList();
+		return suggestions.map(builder).collect(Collectors.toList());
 	}
 
 }

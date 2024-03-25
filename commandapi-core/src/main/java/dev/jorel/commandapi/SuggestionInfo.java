@@ -22,37 +22,73 @@ package dev.jorel.commandapi;
 
 import dev.jorel.commandapi.executors.CommandArguments;
 
+import java.util.Objects;
+
 /**
  * A class that represents information which you can use to generate
  * suggestions.
- * 
- * @param sender       - the CommandSender typing this command
- * @param previousArgs - a {@link CommandArguments} object holding previously declared (and parsed) arguments. This can
- * 		 be used as if it were arguments in a command executor method
- * @param currentInput - a string representing the full current input (including
- *                     /)
- * @param currentArg   - the current partially typed argument. For example
- *                     "/mycmd tes" will return "tes"
  */
-public record SuggestionInfo<CommandSender>(
-	/** @param sender - the CommandSender typing this command */
-	CommandSender sender,
+public final class SuggestionInfo<CommandSender> {
+    private final CommandSender sender;
+    private final CommandArguments previousArgs;
+    private final String currentInput;
+    private final String currentArg;
 
-	/**
-	 * @param previousArgs - a {@link CommandArguments} object holding previously declared (and parsed) arguments. This can
-	 * 		 be used as if it were arguments in a command executor method
-	 */
-	CommandArguments previousArgs,
+    /**
+     * @param sender       - the CommandSender typing this command
+     * @param previousArgs - a {@link CommandArguments} object holding previously declared (and parsed) arguments. This can
+     *                     be used as if it were arguments in a command executor method
+     * @param currentInput - a string representing the full current input (including
+     *                     /)
+     * @param currentArg   - the current partially typed argument. For example
+     *                     "/mycmd tes" will return "tes"
+     */
+    public SuggestionInfo(CommandSender sender, CommandArguments previousArgs, String currentInput, String currentArg) {
+        this.sender = sender;
+        this.previousArgs = previousArgs;
+        this.currentInput = currentInput;
+        this.currentArg = currentArg;
+    }
 
-	/**
-	 * @param currentInput - a string representing the full current input (including
-	 *                     /)
-	 */
-	String currentInput,
+    public CommandSender sender() {
+        return sender;
+    }
 
-	/**
-	 * @param currentArg - the current partially typed argument. For example "/mycmd
-	 *                   tes" will return "tes"
-	 */
-	String currentArg) {
+    public CommandArguments previousArgs() {
+        return previousArgs;
+    }
+
+    public String currentInput() {
+        return currentInput;
+    }
+
+    public String currentArg() {
+        return currentArg;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (SuggestionInfo) obj;
+        return Objects.equals(this.sender, that.sender) &&
+               Objects.equals(this.previousArgs, that.previousArgs) &&
+               Objects.equals(this.currentInput, that.currentInput) &&
+               Objects.equals(this.currentArg, that.currentArg);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sender, previousArgs, currentInput, currentArg);
+    }
+
+    @Override
+    public String toString() {
+        return "SuggestionInfo[" +
+               "sender=" + sender + ", " +
+               "previousArgs=" + previousArgs + ", " +
+               "currentInput=" + currentInput + ", " +
+               "currentArg=" + currentArg + ']';
+    }
+
 }
